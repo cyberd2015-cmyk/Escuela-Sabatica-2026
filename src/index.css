@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 43 74% 52%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 47% 31%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 15%;
+    --card-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 43 74% 52%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 43 74% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full hover:bg-primary/50;
+}
+
+/* Glass effect for cards */
+.glass {
+  @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-700/50;
+}
+
+/* Institutional gradient */
+.gradient-institutional {
+  background: linear-gradient(135deg, #003366 0%, #004488 50%, #003366 100%);
+}
+
+/* Gold accent gradient */
+.gradient-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #F0D060 50%, #D4AF37 100%);
+}
+
+.bg-hero-gradient {
+  background: linear-gradient(to bottom, #1A4789, #0D2A54);
+}

@@ -135,25 +135,7 @@ export default function MainLayout() {
                     <Outlet />
                 </main>
 
-                {/* Mobile Navigation Dock (iOS style) */}
-                <nav className="md:hidden fixed bottom-6 left-6 right-6 bg-institutional-blue text-white px-2 py-4 rounded-3xl shadow-2xl border border-institutional-gold/20 flex justify-around items-center z-50">
-                    {navItems.slice(0, 4).map(item => {
-                        const isActive = location.pathname === item.path
-                        return (
-                            <button
-                                key={item.path}
-                                onClick={() => navigate(item.path)}
-                                className={`flex flex-col items-center gap-1 group relative ${isActive ? 'text-institutional-gold' : 'text-white/40'}`}
-                            >
-                                <item.icon className={`w-6 h-6 transition-all ${isActive ? 'scale-110' : 'scale-100'}`} />
-                                {isActive && <span className="absolute -top-1 w-1 h-1 bg-institutional-gold rounded-full" />}
-                            </button>
-                        )
-                    })}
-                    <button onClick={signOut} className="text-white/20">
-                        <LogOut className="w-5 h-5" />
-                    </button>
-                </nav>
+
             </div>
 
             {/* Mobile Slide-out Menu */}
@@ -182,7 +164,7 @@ export default function MainLayout() {
                         </nav>
                         <div className="p-6 bg-white/5">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-4">Información</p>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-full bg-institutional-blue border border-institutional-gold flex items-center justify-center">
                                     <Users className="w-5 h-5 text-institutional-gold" />
                                 </div>
@@ -191,6 +173,16 @@ export default function MainLayout() {
                                     <p className="text-[10px] text-white/40 uppercase tracking-widest">{isAdmin ? 'Administrador' : 'Maestro'}</p>
                                 </div>
                             </div>
+                            <button
+                                onClick={() => {
+                                    setSidebarOpen(false)
+                                    signOut()
+                                }}
+                                className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-red-500/10 text-white/70 hover:text-red-400 transition-all border border-transparent hover:border-red-500/30 group"
+                            >
+                                <LogOut className="w-5 h-5 group-hover:text-red-400" />
+                                <span className="font-bold uppercase tracking-widest text-xs">Cerrar Sesión</span>
+                            </button>
                         </div>
                     </div>
                 </div>

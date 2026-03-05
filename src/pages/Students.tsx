@@ -53,16 +53,17 @@ export default function StudentsPage() {
         setEditingId(null)
     }
 
-    const handleCreate = async () => {
+    const handleSave = async () => {
         if (!formData.name.trim()) return
-        const { class_id, ...studentData } = formData
-        await createStudent(studentData, class_id || undefined)
-        resetForm()
-    }
 
-    const handleUpdate = async () => {
-        if (!editingId || !formData.name.trim()) return
-        await updateStudent(editingId, formData)
+        if (editingId) {
+            // Si ya existe el ID, hacer UPDATE (mapear array y reemplazar localmente se hace en el hook)
+            await updateStudent(editingId, formData)
+        } else {
+            // Si NO existe ID, hacer CREATE (añadir nuevo)
+            const { class_id, ...studentData } = formData
+            await createStudent(studentData, class_id || undefined)
+        }
         resetForm()
     }
 
@@ -185,7 +186,7 @@ export default function StudentsPage() {
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <Button onClick={editingId ? handleUpdate : handleCreate} disabled={!formData.name.trim()}>
+                            <Button onClick={handleSave} disabled={!formData.name.trim()}>
                                 <Check className="w-4 h-4 mr-2" />
                                 {editingId ? 'Guardar Cambios' : 'Crear Alumno'}
                             </Button>

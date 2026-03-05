@@ -169,26 +169,26 @@ export function useStudents() {
     const updateStudent = async (id: string, data: Partial<Student>) => {
         if (!isSupabaseConfigured) {
             mockStore.updateStudent(id, data)
-            await fetchStudents()
+            setStudents(prev => prev.map(s => s.id === id ? { ...s, ...data } : s))
             return true
         }
         // If updating class_id, we might need to handle card transfer? 
         // For MVP, just update the student record.
         const { error } = await supabase.from('students').update(data).eq('id', id)
         if (error) throw error
-        await fetchStudents()
+        setStudents(prev => prev.map(s => s.id === id ? { ...s, ...data } : s))
         return true
     }
 
     const deleteStudent = async (id: string) => {
         if (!isSupabaseConfigured) {
             mockStore.deleteStudent(id)
-            await fetchStudents()
+            setStudents(prev => prev.filter(s => s.id !== id))
             return true
         }
         const { error } = await supabase.from('students').delete().eq('id', id)
         if (error) throw error
-        await fetchStudents()
+        setStudents(prev => prev.filter(s => s.id !== id))
         return true
     }
 

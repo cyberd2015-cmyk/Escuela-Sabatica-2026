@@ -137,10 +137,11 @@ const initialCardStudents: CardStudent[] = [
 
 // In-memory store
 class MockStore {
-    private classes: Class[] = [...initialClasses]
-    private students: Student[] = [...initialStudents]
-    private cards: Card[] = [...initialCards]
-    private cardStudents: CardStudent[] = [...initialCardStudents]
+    private readonly STORAGE_KEY = 'escuela_sabatica_v1'
+    private classes: Class[] = []
+    private students: Student[] = []
+    private cards: Card[] = []
+    private cardStudents: CardStudent[] = []
     private weeks: Week[] = []
     private attendance: Attendance[] = []
     private weeklyResults: WeeklyResults[] = []
@@ -150,32 +151,81 @@ class MockStore {
     private hasIndexes: boolean = false // SRE Optimization flag
 
     constructor() {
-        // Pre-fill some attendance to trigger an alert
-        // Let's assume student-2 (Laura Sánchez) in class-2 missed last 3 weeks
-        const card2 = 'card-2'
-        const student2 = 'student-2'
+        this.load()
+    }
 
-        // Week 1: Absent
-        const w1 = this.createOrGetWeek(card2, 1, '2026-02-08')
-        this.setAttendance(w1.id, student2, false)
+    private load() {
+        try {
+            const data = localStorage.getItem(this.STORAGE_KEY)
+            if (data) {
+                const parsed = JSON.parse(data)
+                this.classes = parsed.classes || [...initialClasses]
+                this.students = parsed.students || [...initialStudents]
+                this.cards = parsed.cards || [...initialCards]
+                this.cardStudents = parsed.cardStudents || [...initialCardStudents]
+                this.weeks = parsed.weeks || []
+                this.attendance = parsed.attendance || []
+                this.weeklyResults = parsed.weeklyResults || []
+                this.quarterGoals = parsed.quarterGoals || []
+                this.finalEvaluations = parsed.finalEvaluations || []
+                this.alerts = parsed.alerts || []
+                this.hasIndexes = parsed.hasIndexes || false
+            } else {
+                this.classes = [...initialClasses]
+                this.students = [...initialStudents]
+                this.cards = [...initialCards]
+                this.cardStudents = [...initialCardStudents]
 
-        // Week 2: Absent
-        const w2 = this.createOrGetWeek(card2, 2, '2026-02-15')
-        this.setAttendance(w2.id, student2, false)
+                const card2 = 'card-2'
+                const student2 = 'student-2'
 
-        // Week 3: Absent
-        const w3 = this.createOrGetWeek(card2, 3, '2026-02-22')
-        this.setAttendance(w3.id, student2, false)
+                const w1: Week = { id: generateId(), card_id: card2, week_number: 1, date: '2026-02-08' }
+                this.weeks.push(w1)
+                this.attendance.push({ id: generateId(), week_id: w1.id, student_id: student2, present: false })
 
-        // Add a birthday alert for someone
-        this.alerts.push({
-            id: generateId(),
-            student_id: 'student-3',
-            type: 'birthday',
-            message: 'Diego Hernández cumple años hoy. ¡Celébralo!',
-            resolved: false,
-            created_at: new Date().toISOString()
-        })
+                const w2: Week = { id: generateId(), card_id: card2, week_number: 2, date: '2026-02-15' }
+                this.weeks.push(w2)
+                this.attendance.push({ id: generateId(), week_id: w2.id, student_id: student2, present: false })
+
+                const w3: Week = { id: generateId(), card_id: card2, week_number: 3, date: '2026-02-22' }
+                this.weeks.push(w3)
+                this.attendance.push({ id: generateId(), week_id: w3.id, student_id: student2, present: false })
+
+                this.alerts.push({
+                    id: generateId(),
+                    student_id: 'student-3',
+                    type: 'birthday',
+                    message: 'Diego Hernández cumple años hoy. ¡Celébralo!',
+                    resolved: false,
+                    created_at: new Date().toISOString()
+                })
+
+                this.save()
+            }
+        } catch (e) {
+            console.error('Failed to load local storage data', e)
+        }
+    }
+
+    private save() {
+        try {
+            const data = {
+                classes: this.classes,
+                students: this.students,
+                cards: this.cards,
+                cardStudents: this.cardStudents,
+                weeks: this.weeks,
+                attendance: this.attendance,
+                weeklyResults: this.weeklyResults,
+                quarterGoals: this.quarterGoals,
+                finalEvaluations: this.finalEvaluations,
+                alerts: this.alerts,
+                hasIndexes: this.hasIndexes
+            }
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
+        } catch (e) {
+            console.error('Failed to save to local storage', e)
+        }
     }
 
     // Classes
@@ -195,6 +245,7 @@ class MockStore {
             created_at: new Date().toISOString()
         }
         this.classes.push(newClass)
+        this.save()
         return newClass
     }
 
@@ -202,6 +253,7 @@ class MockStore {
         const index = this.classes.findIndex(c => c.id === id)
         if (index === -1) return undefined
         this.classes[index] = { ...this.classes[index], ...data }
+        this.save()
         return this.classes[index]
     }
 
@@ -209,6 +261,7 @@ class MockStore {
         const index = this.classes.findIndex(c => c.id === id)
         if (index === -1) return false
         this.classes.splice(index, 1)
+        this.save()
         return true
     }
 
@@ -229,6 +282,7 @@ class MockStore {
             created_at: new Date().toISOString()
         }
         this.students.push(newStudent)
+        this.save()
         return newStudent
     }
 
@@ -236,6 +290,7 @@ class MockStore {
         const index = this.students.findIndex(s => s.id === id)
         if (index === -1) return undefined
         this.students[index] = { ...this.students[index], ...data }
+        this.save()
         return this.students[index]
     }
 
@@ -244,6 +299,7 @@ class MockStore {
         if (index === -1) return false
         this.students.splice(index, 1)
         this.cardStudents = this.cardStudents.filter(cs => cs.student_id !== id)
+        this.save()
         return true
     }
 
@@ -282,6 +338,7 @@ class MockStore {
             progress: 0
         }
         this.cards.push(newCard)
+        this.save()
         return newCard
     }
 
@@ -294,6 +351,7 @@ class MockStore {
         this.weeks = this.weeks.filter(w => w.card_id !== id)
         this.quarterGoals = this.quarterGoals.filter(qg => qg.card_id !== id)
         this.finalEvaluations = this.finalEvaluations.filter(fe => fe.card_id !== id)
+        this.save()
         return true
     }
 
@@ -305,6 +363,7 @@ class MockStore {
         }
         const index = this.cards.findIndex(c => c.id === id)
         this.cards[index] = { ...this.cards[index], ...data }
+        this.save()
         return this.cards[index]
     }
 
@@ -334,6 +393,7 @@ class MockStore {
             if (cardIndex !== -1) {
                 this.cards[cardIndex].students_count = this.getCardStudents(cardId).length
             }
+            this.save()
         }
     }
 
@@ -349,6 +409,7 @@ class MockStore {
         if (cardIndex !== -1) {
             this.cards[cardIndex].students_count = this.getCardStudents(cardId).length
         }
+        this.save()
     }
 
     // Weeks
@@ -374,6 +435,7 @@ class MockStore {
                 date
             }
             this.weeks.push(week)
+            this.save()
         }
         return week
     }
@@ -393,6 +455,7 @@ class MockStore {
         const existing = this.attendance.find(a => a.week_id === weekId && a.student_id === studentId)
         if (existing) {
             existing.present = present
+            this.save()
             return existing
         }
         const newAttendance: Attendance = {
@@ -402,6 +465,7 @@ class MockStore {
             present
         }
         this.attendance.push(newAttendance)
+        this.save()
         return newAttendance
     }
 
@@ -414,6 +478,7 @@ class MockStore {
         const existing = this.weeklyResults.find(wr => wr.week_id === weekId)
         if (existing) {
             Object.assign(existing, data)
+            this.save()
             return existing
         }
         const newResults: WeeklyResults = {
@@ -422,6 +487,7 @@ class MockStore {
             ...data
         }
         this.weeklyResults.push(newResults)
+        this.save()
         return newResults
     }
 
@@ -466,6 +532,7 @@ class MockStore {
         const existing = this.quarterGoals.find(qg => qg.card_id === cardId)
         if (existing) {
             Object.assign(existing, data)
+            this.save()
             return existing
         }
         const newGoals: QuarterGoals = {
@@ -474,6 +541,7 @@ class MockStore {
             ...data
         }
         this.quarterGoals.push(newGoals)
+        this.save()
         return newGoals
     }
 
@@ -490,6 +558,7 @@ class MockStore {
         const existing = this.finalEvaluations.find(fe => fe.card_id === cardId)
         if (existing) {
             existing.summary_text = summaryText
+            this.save()
             return existing
         }
         const newEval = {
@@ -499,6 +568,7 @@ class MockStore {
             created_at: new Date().toISOString()
         }
         this.finalEvaluations.push(newEval)
+        this.save()
         return newEval
     }
 
@@ -551,12 +621,16 @@ class MockStore {
 
     resolveAlert(id: string): void {
         const alert = this.alerts.find(a => a.id === id)
-        if (alert) alert.resolved = true
+        if (alert) {
+            alert.resolved = true
+            this.save()
+        }
     }
 
     addPerformanceIndexes(): void {
         console.log('[SRE] Aplicando índices autónomos: idx_attendance_date, idx_attendance_student_id');
         this.hasIndexes = true;
+        this.save()
     }
 
     verifyCredentials(email: string, password: string) {
